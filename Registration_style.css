@@ -1,0 +1,143 @@
+/* Body background color */
+body {
+    background-color: white;
+}
+
+/* Style for the logo division */
+.logo {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 6px;
+    left: 40px;
+    font-family: "Sedan SC", serif;
+}
+
+/* Style for the logo image */
+.logo img {
+    border: 5px solid rgb(0, 0, 0);
+    width: 70px; /* Adjusted width */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: 10px;
+}
+
+.container {
+    width: 70%;
+    height: 520px;
+    margin: auto;
+    margin-top: 3%;
+    background-color: rgb(255, 254, 251);
+    display: flex;
+    justify-content: space-between;
+    padding: 50px;
+    border-radius: 20px;
+}
+
+.side-image img {
+    height: 420px;
+    width: 390px;
+    border-radius: 20px;
+    margin-right: 20px;
+    padding-top: 15px;
+}
+
+.content {
+    flex: 1;
+    padding-right: 30px;
+    padding-bottom: 30px;
+    background-color: rgb(255, 254, 251);
+    padding-top: 70px;
+}
+
+.signup-form .form-group {
+    margin: 30px 0;
+    position: relative;
+}
+
+.form-group input {
+    padding: 20px 45px 20px 20px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    border: 2px solid rgb(0, 0, 0);
+    border-radius: 40px;
+}
+
+.signup-form .submit-button {
+    width: 100%;
+    height: 50px;
+    background: #c57a09;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    font-size: 16px;
+    color: bisque;
+    cursor: pointer;
+    font-family: "Sedan SC", serif;
+}
+
+.signup-form .submit-button:hover {
+    background-color: #a04f00; /* Darker shade on hover */
+}
+
+/* Style for the file input */
+.file-input {
+    display: none; /* Hide the default file input */
+}
+
+.profile {
+    position: relative;
+    margin-bottom: 20px;
+    font-family: "Sedan SC", serif;
+}
+
+.profile input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.profile label {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: #c57a09; /* Initial button background color */
+    color: bisque;
+    border-radius: 40px;
+    font-size: 16px;
+    text-align: center;
+    line-height: 50px;
+    cursor: pointer;
+}
+
+/* Change button color when file is selected */
+.profile input[type="file"]:valid + label {
+    background-color: #8e200d; /* Red color */
+}
+
+
+
+/* Style for the dropdown */
+.input-field {
+    padding: 40px 20px;
+    width: 100%;
+    border: 2px solid #ddd;
+    border-radius: 40px;
+    font-size: 16px;
+    outline: none;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+    border-color: #c57a09; /* Focus color */
+}
+.role label{
+    padding: 200px 200px;
+}
+

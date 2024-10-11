@@ -1,0 +1,128 @@
+
+body{
+    background-color: white;
+}
+.logo{
+    display: flex;
+    position: absolute;
+    top: 300px;
+    left: 400px;
+    font-family: "Sedan SC", serif;
+    
+
+}
+.logo img{
+    height: 70px;
+    width: 70px;
+    margin: 10px;
+    
+}
+
+@keyframes slideInFromLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Apply animation to the container */
+.container {
+    animation: slideInFromLeft 0.5s ease-in-out forwards; /* Apply slide-in animation */
+    width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    padding-top: 40px;
+    border-radius: 10px;
+    position: relative; /* Position relative for absolute positioning of images */
+    overflow: hidden; /* Hide overflow to prevent images from leaking out of the container */
+    position: absolute;
+    top: 400px;
+    left: 300px;
+    background-color: rgb(255, 243, 228);
+   color:  rgb(0, 0, 0);
+}
+.container h1{
+    font-family: "Playfair Display", serif;
+  
+   position: relative;
+   left: 200px;
+   top:400px
+   color: black;
+   font-style: oblique;
+}
+/* Adjust form-group margin */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Adjust label color */
+label {
+   color: rgb(0, 0, 0);
+}
+
+/* Adjust input and textarea width */
+input[type="text"],
+textarea {
+    width: calc(100% - 20px); /* Adjusted width to account for padding */
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid black;
+}
+
+/* Adjust submit button styles */
+input[type="submit"] {
+    background-color: #c57a09; /* Yellow button */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    border: 5px black;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+    background-color: #a04f00; /* Darker yellow on hover */
+}
+
+/* Define keyframes for the slide-in animation of pictures */
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Apply animation to pictures */
+.picture-container img {
+    animation: slideInFromRight 0.5s ease-in-out forwards; /* Apply slide-in animation */
+    max-width: 30%;
+    padding-left: 20px;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+/* Position pictures within the container */
+.picture-container img:nth-child(1) {
+    left: 0;
+}
+
+.picture-container img:nth-child(2) {
+    left: 33.33%;
+}
+
+.picture-container img:nth-child(3) {
+    left: 66.66%;
+}

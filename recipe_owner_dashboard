@@ -1,0 +1,203 @@
+<?php
+session_start();
+include 'database.php'; // Assuming this file connects to your database
+
+// Ensure only recipe owners can access this page
+if ($_SESSION['role'] != 'recipe_owner') {
+    header("Location: login.php"); // Redirect to login page if not logged in as a recipe owner
+    exit();
+}
+
+// Check if editing an existing recipe (passed via URL parameter)
+$edit_mode = false;
+if (isset($_GET['recipe_id'])) {
+    $edit_mode = true;
+    $recipe_id = $_GET['recipe_id'];
+
+    // Fetch existing recipe details from database
+    $stmt_fetch_recipe = $conn->prepare("SELECT * FROM recipes WHERE recipe_id = ?");
+    $stmt_fetch_recipe->bind_param("i", $recipe_id);
+    $stmt_fetch_recipe->execute();
+    $result_recipe = $stmt_fetch_recipe->get_result();
+
+    if ($result_recipe->num_rows > 0) {
+        $recipe_data = $result_recipe->fetch_assoc();
+        $recipe_image_name = $recipe_data['recipe_image'];
+        $recipe_name = $recipe_data['recipe_name'];
+        $category_id = $recipe_data['category_id'];
+
+        // Fetch ingredients and quantities for the existing recipe
+        $stmt_fetch_ingredients = $conn->prepare("SELECT i.ingredient_id, i.ingredient_name, ri.quantity FROM recipe_ingredients ri JOIN ingredients i ON ri.ingredient_id = i.ingredient_id WHERE ri.recipe_id = ?");
+        $stmt_fetch_ingredients->bind_param("i", $recipe_id);
+        $stmt_fetch_ingredients->execute();
+        $result_ingredients = $stmt_fetch_ingredients->get_result();
+
+        $ingredients = [];
+        $quantities = [];
+        while ($row = $result_ingredients->fetch_assoc()) {
+            $ingredients[] = $row['ingredient_name'];
+            $quantities[] = $row['quantity'];
+        }
+
+        // Fetch steps for the existing recipe
+        $stmt_fetch_steps = $conn->prepare("SELECT step_number, description FROM steps WHERE recipe_id = ? ORDER BY step_number");
+        $stmt_fetch_steps->bind_param("i", $recipe_id);
+        $stmt_fetch_steps->execute();
+        $result_steps = $stmt_fetch_steps->get_result();
+
+        $steps = [];
+        while ($row = $result_steps->fetch_assoc()) {
+            $steps[] = $row['description'];
+        }
+    } else {
+        // Recipe not found, handle error or redirect
+        header("Location: recipe_owner_dashboard.php");
+        exit();
+    }
+}
+
+// Handle form submission to add or update a recipe
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $recipe_image_name = $_FILES['recipe_image']['name'];
+    $recipe_image_temp = $_FILES['recipe_image']['tmp_name'];
+    $ingredients = $_POST['ingredients'];
+    $recipe_name = $_POST['recipe_name'];
+    $category_id = $_POST['category_id'];
+    $steps = $_POST['steps'];
+    $quantities = $_POST['quantities'];
+
+    // Set the directory to save recipe images
+    $target_directory = "recipe_images/";
+    $target_file = $target_directory . basename($recipe_image_name);
+
+    // Move uploaded file to the target directory
+    if (move_uploaded_file($recipe_image_temp, $target_file)) {
+        if ($edit_mode) {
+            // Update existing recipe in recipes table
+            $stmt_update_recipe = $conn->prepare("UPDATE recipes SET recipe_image = ?, recipe_name = ?, category_id = ? WHERE recipe_id = ?");
+            $stmt_update_recipe->bind_param("ssii", $recipe_image_name, $recipe_name, $category_id, $recipe_id);
+            $stmt_update_recipe->execute();
+
+            // Delete existing ingredients and steps associated with the recipe
+            $stmt_delete_ingredients = $conn->prepare("DELETE FROM recipe_ingredients WHERE recipe_id = ?");
+            $stmt_delete_ingredients->bind_param("i", $recipe_id);
+            $stmt_delete_ingredients->execute();
+
+            $stmt_delete_steps = $conn->prepare("DELETE FROM steps WHERE recipe_id = ?");
+            $stmt_delete_steps->bind_param("i", $recipe_id);
+            $stmt_delete_steps->execute();
+        } else {
+            // Insert new recipe into recipes table
+            $stmt_recipe = $conn->prepare("INSERT INTO recipes (recipe_image, recipe_name, recipe_owner, category_id) VALUES (?, ?, ?, ?)");
+            $stmt_recipe->bind_param("sssi", $recipe_image_name, $recipe_name, $_SESSION['username'], $category_id);
+            $stmt_recipe->execute();
+            $recipe_id = $conn->insert_id; // Get the auto-generated recipe_id
+        }
+
+        // Insert or update ingredients into ingredients table and associate with recipe
+        foreach ($ingredients as $index => $ingredient) {
+            $stmt_ingredient = $conn->prepare("INSERT INTO ingredients (ingredient_name) VALUES (?) ON DUPLICATE KEY UPDATE ingredient_id=LAST_INSERT_ID(ingredient_id)");
+            $stmt_ingredient->bind_param("s", $ingredient);
+            $stmt_ingredient->execute();
+            $ingredient_id = $conn->insert_id; // Get the auto-generated ingredient_id
+
+            // Insert or update into recipe_ingredients table
+            $stmt_recipe_ingredient = $conn->prepare("INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (?, ?, ?)");
+            $stmt_recipe_ingredient->bind_param("iis", $recipe_id, $ingredient_id, $quantities[$index]);
+            $stmt_recipe_ingredient->execute();
+        }
+
+        // Insert or update steps into steps table
+        foreach ($steps as $index => $step) {
+            $step_number = $index + 1; // Step numbering starts from 1
+            $stmt_step = $conn->prepare("INSERT INTO steps (recipe_id, step_number, description) VALUES (?, ?, ?)");
+            $stmt_step->bind_param("iis", $recipe_id, $step_number, $step);
+            $stmt_step->execute();
+        }
+
+        // Redirect to recipe owner dashboard after successful insertion or update
+        header("Location: recipe_owner_dashboard.php");
+        exit();
+    } else {
+        $error_message = "Sorry, there was an error uploading your file.";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $edit_mode ? 'Edit Recipe' : 'Add Recipe'; ?></title>
+    <link rel="stylesheet" href="add_recipe_style.css">
+</head>
+<body>
+    <h2><?php echo $edit_mode ? 'Edit Recipe' : 'Add New Recipe'; ?></h2>
+
+    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data">
+        <div class="recipe_image">
+            <label for="recipe_image">Upload Recipe Image</label>
+            <input type="file" id="recipe_image" name="recipe_image" accept="image/*" class="file-input" <?php echo $edit_mode ? '' : 'required'; ?>>
+        </div>
+        <div class="form-group">
+            <label for="recipe_name">Recipe Name:</label><br>
+            <input type="text" id="recipe_name" name="recipe_name" value="<?php echo isset($recipe_name) ? $recipe_name : ''; ?>" required><br><br>
+        </div>
+        <div class="form-group">
+            <label for="category_id">Recipe Category:</label><br>
+            <select id="category_id" name="category_id" required>
+                <option value="">Select Category</option>
+                <?php
+                $sql_categories = "SELECT category_id, recipe_category FROM categories";
+                $result_categories = $conn->query($sql_categories);
+                if ($result_categories->num_rows > 0) {
+                    while ($row = $result_categories->fetch_assoc()) {
+                        $selected = ($category_id == $row['category_id']) ? 'selected' : '';
+                        echo '<option value="' . $row['category_id'] . '" ' . $selected . '>' . $row['recipe_category'] . '</option>';
+                    }
+                }
+                ?>
+            </select><br><br>
+        </div>
+        <div class="form-group">
+            <label for="ingredients">Ingredients:</label><br>
+            <?php 
+            $ingredient_count = max(count($ingredients ?? []), 1);
+            for ($i = 0; $i < $ingredient_count; $i++): 
+            ?>
+                <input type="text" name="ingredients[]" value="<?php echo isset($ingredients[$i]) ? $ingredients[$i] : ''; ?>" placeholder="Ingredient" required>
+                <input type="text" name="quantities[]" value="<?php echo isset($quantities[$i]) ? $quantities[$i] : ''; ?>" placeholder="Quantity" required><br><br>
+            <?php endfor; ?>
+            <button type="button" onclick="addIngredient()">Add Ingredient</button><br><br>
+        </div>
+        <div class="form-group">
+            <label for="steps">Steps:</label><br>
+            <?php 
+            $step_count = max(count($steps ?? []), 1);
+            for ($i = 0; $i < $step_count; $i++): 
+            ?>
+                <textarea name="steps[]" rows="4" cols="50" placeholder="Step <?php echo $i + 1; ?>" required><?php echo isset($steps[$i]) ? $steps[$i] : ''; ?></textarea><br><br>
+            <?php endfor; ?>
+            <button type="button" onclick="addStep()">Add Step</button><br><br>
+        </div>
+        <input type="submit" value="<?php echo $edit_mode ? 'Update Recipe' : 'Add Recipe'; ?>">
+    </form>
+
+    <script>
+    function addIngredient() {
+        var ingredientDiv = document.createElement('div');
+        ingredientDiv.innerHTML = '<input type="text" name="ingredients[]" placeholder="Ingredient" required>' +
+                                  '<input type="text" name="quantities[]" placeholder="Quantity" required><br><br>';
+        document.querySelector('.form-group:nth-of-type(3)').insertBefore(ingredientDiv, document.querySelector('.form-group:nth-of-type(3) button'));
+    }
+
+    function addStep() {
+        var stepDiv = document.createElement('div');
+        var stepCount = document.querySelectorAll('textarea[name="steps[]"]').length + 1;
+        stepDiv.innerHTML = '<textarea name="steps[]" rows="4" cols="50" placeholder="Step ' + stepCount + '" required></textarea><br><br>';
+        document.querySelector('.form-group:nth-of-type(4)').insertBefore(stepDiv, document.querySelector('.form-group:nth-of-type(4) button'));
+    }
+    </script>
+</body>
+</html>

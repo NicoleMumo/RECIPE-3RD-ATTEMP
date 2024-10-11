@@ -1,0 +1,95 @@
+/* Body background color and font family */
+body {
+    background-image: url(Image/buffet.jpg);
+    background-size: cover; /* Cover the entire viewport */
+    font-family: Arial, sans-serif; /* Default font family */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    margin: 0;
+}
+
+/* Form container */
+.container {
+    width: 400px;
+    background-color: rgba(255, 255, 255, 1.0); 
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 20px; /* Padding applied to everything inside the container */
+}
+
+/* Form title */
+.container h2 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Form input fields */
+.container input[type="text"],
+.container input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+/* Submit button */
+.container input[type="submit"] {
+    width: 100%;
+    background-color: #543903;
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.container input[type="submit"]:hover {
+    background-color: #c18515; /* Darker shade on hover */
+}
+
+/* Link for forgot password */
+.container .forgot-password {
+    text-align: right;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.container .forgot-password a {
+    color: #333;
+    text-decoration: none;
+}
+
+.container .forgot-password a:hover {
+    text-decoration: underline;
+}
+
+/* Register now section */
+.container .register-now {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.container .register-now a {
+    color: #543903; /* Dark brown for link */
+    text-decoration: none;
+}
+
+.container .register-now a:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+.footer {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
